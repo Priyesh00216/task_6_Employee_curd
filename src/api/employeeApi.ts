@@ -36,7 +36,10 @@ export const insertEmployee = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(employee),
+    body: JSON.stringify({
+      ...employee,
+      status: employee.status ? "Active" : "Inactive",
+    }),
   });
 
   if (!response.ok) {
@@ -61,7 +64,11 @@ export const updateEmployee = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(employee),
+    body: JSON.stringify({
+      id,
+      ...employee,
+      status: employee.status ? "Active" : "Inactive",
+    }),
   });
 
   if (!response.ok) {
@@ -69,8 +76,8 @@ export const updateEmployee = async (
   }
 
   return {
-    ...employee,
     id,
+    ...employee,
   };
 };
 
