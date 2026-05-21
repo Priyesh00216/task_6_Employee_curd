@@ -6,8 +6,8 @@ export type Employee = {
      name: string;
      email: string;
      number: string;
-     address: string
-     joiningDate: string
+     address: string;
+     joiningDate: string;
      department: string;
      salary: number;
      status: boolean;
