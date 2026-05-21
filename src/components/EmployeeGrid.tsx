@@ -18,13 +18,13 @@ const EmployeeGrid = ({
         <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {employees.map((employee) => (
         <div
-          key={employee.id}
+          key={employee.employeeId}
           className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg"
         >
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-semibold text-white">
-                {employee.name}
+                {employee.firstName} {employee.lastName}
               </h3>
               <p className="mt-1 text-sm text-slate-400">
                 {employee.email}
@@ -33,24 +33,24 @@ const EmployeeGrid = ({
 
             <span
               className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                employee.status
+                employee.isActive
                   ? "bg-emerald-500/10 text-emerald-400"
                   : "bg-red-500/10 text-red-400"
               }`}
             >
-              {employee.status ? "Active" : "Inactive"}
+              {employee.isActive ? "Active" : "Inactive"}
             </span>
           </div>
 
           <div className="space-y-2 text-sm text-slate-300">
             <p>
               <span className="text-slate-500">Number:</span>{" "}
-              {employee.number}
+              {employee.phoneNumber}
             </p>
 
             <p>
               <span className="text-slate-500">Department:</span>{" "}
-              {employee.department}
+              {employee.departmentId}
             </p>
 
             <p>

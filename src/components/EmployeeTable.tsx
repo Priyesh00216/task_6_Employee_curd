@@ -1,5 +1,6 @@
 import type { Employee } from "../type/employee";
 import { Pencil, Trash2, ArrowUp, ArrowDown, Eye } from "lucide-react";
+import { departmentOptions } from "../constant/departmentOption";
 
 type EmployeeTableProps ={
     employees: Employee[];
@@ -9,12 +10,12 @@ type EmployeeTableProps ={
     onSort: (field: string) => void;
     sortField: string;
     sortOrder: string;
-    selectedEmployees: number[];
+    selectedEmployee: number[];
     onSelectedEmployee: (id: number) => void;
     onSelectedAllEmployee: () => void;
 }
 
-const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sortField, sortOrder, onViewEmployee, selectedEmployees, onSelectedEmployee, onSelectedAllEmployee}: EmployeeTableProps) =>{
+const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sortField, sortOrder, onViewEmployee, selectedEmployee, onSelectedEmployee, onSelectedAllEmployee}: EmployeeTableProps) =>{
     return(
        <section className="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-lg">
         <div className="w-full overflow-x-auto">
@@ -27,7 +28,7 @@ const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sort
                   checked={
                     employees.length > 0 &&
                     employees.every((employee) =>
-                      selectedEmployees.includes(employee.id)
+                      selectedEmployee.includes(employee.employeeId)
                     )
                   }
                   onChange={onSelectedAllEmployee}
@@ -106,23 +107,23 @@ const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sort
           <tbody className="divide-y divide-slate-800">
             {employees.map((employee) => (
             <tr
-                key={employee.id}
+                key={employee.employeeId}
                 className="transition hover:bg-slate-800/60"
               >
                 <td className="px-5 py-4">
                   <input
                     type="checkbox"
-                    checked={selectedEmployees.includes(employee.id)}
-                    onChange={() => onSelectedEmployee(employee.id)}
+                    checked={selectedEmployee.includes(employee.employeeId)}
+                    onChange={() => onSelectedEmployee(employee.employeeId)}
                     className="h-4 w-4 accent-blue-600"
                   />
                 </td>
                 <td className="px-5 py-4 text-slate-400">
-                  {employee.id}
+                  {employee.employeeId}
                 </td>
 
                 <td className="px-5 py-4 font-medium text-white">
-                  {employee.name}
+                  {employee.firstName} {employee.lastName}  
                 </td>
 
                 <td className="px-5 py-4 text-slate-400">
@@ -130,7 +131,7 @@ const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sort
                 </td>
 
                 <td className="px-5 py-4 text-slate-400">
-                  {employee.number}
+                  {employee.phoneNumber}
                 </td>
 
                 <td className="px-5 py-4 text-slate-400">
@@ -141,8 +142,13 @@ const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sort
                   {employee.joiningDate}
                 </td>
 
-                <td className="px-5 py-4 text-slate-400">
-                  {employee.department}
+                <td className="px-5 py-4 text-slate-400" >
+                  {
+                    departmentOptions.find(
+                      (department) =>
+                        department.value === employee.departmentId
+                    )?.label
+                  }
                 </td>
 
                 <td className="px-5 py-4 text-slate-400">
@@ -152,12 +158,12 @@ const EmployeeTable =({employees, onDeleteEmployee, onEditEmployee, onSort, sort
                 <td className="px-5 py-4">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      employee.status
+                      employee.isActive
                         ? "bg-emerald-500/10 text-emerald-400"
                         : "bg-red-500/10 text-red-400"
                     }`}
                   >
-                    {employee.status
+                    {employee.isActive
                       ? "Active"
                       : "Inactive"}
         

@@ -8,6 +8,7 @@ import EmployeeTable from "../components/EmployeeTable";
 import Modal from "../components/Modal";
 import EmployeeGrid from "../components/EmployeeGrid";
 import { LayoutGrid, Table } from "lucide-react";
+import { departmentOptions } from "../constant/departmentOption";
 import toast from "react-hot-toast";
 
 
@@ -19,15 +20,15 @@ const Employees = () => {
   const [ selectedEmployee, setSelectedEmployee ] = useState<Employee | null>(null);
   const [ searchEmployee, setSearchEmployee ] = useState("");
   const [ statusFilter, setStatusFilter] = useState("All");
-  const [ departmentFilter, setDepartmentFilter ] = useState("All");
+  const [ departmentFilter, setDepartmentFilter ] = useState<number>(0);
   const [ sortField, setSortField ] = useState("");
   const [ sortOrder, setSortOrder ] = useState("asc")
   const [ employeeToDelete, setEmployeeToDelete ] = useState<Employee | null>(null);
   const [ viewGrid, setViewGrid ] = useState< "table" | "grid" >("table");
   const [ viewSelectedEmployee, setViewSelectedEmployee] = useState<Employee | null>(null);
   const [ currentPage, setCurrentPage ] = useState(1);
-  const [ selectedEmployees, setSelectedEmployees ] = useState<number[]>([]);
-
+  const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
+  
   const employeesPerPage = 20;
 
 const fetchEmployees = async () => {
@@ -85,21 +86,23 @@ const fetchEmployees = async () => {
 
       let employeeAfterUpdate: Employee;
 
-      if( selectedEmployee.id > 10){
+      if( selectedEmployee.employeeId > 10){
         employeeAfterUpdate = {
           ...employee,
-          id: selectedEmployee.id,
+          employeeId: selectedEmployee.employeeId,
+          createdAt: selectedEmployee.createdAt,
+          updatedAt: new Date().toISOString(),
         };
       } else {
           employeeAfterUpdate = await updateEmployee(
-           selectedEmployee.id,
+           selectedEmployee.employeeId,
            employee
           );
         }
 
       setEmployees((prev) => 
         prev.map((emp) => 
-        emp.id === selectedEmployee.id
+        emp.employeeId === selectedEmployee.employeeId
           ?employeeAfterUpdate
           :emp
         )
@@ -138,24 +141,25 @@ const fetchEmployees = async () => {
   const  filteredEmployee = employees.filter((employee) =>{
 
     const matchesSearch =
-    employee.name.toLowerCase().includes(searchEmployee.toLowerCase())||
+    employee.firstName.toLowerCase().includes(searchEmployee.toLowerCase())||
+    employee.lastName.toLowerCase().includes(searchEmployee.toLowerCase())||
     employee.email.toLowerCase().includes(searchEmployee.toLowerCase())||
-    employee.department.toLowerCase().includes(searchEmployee.toLowerCase());
+    String(employee.departmentId).toLowerCase().includes(searchEmployee.toLowerCase());
     
     const matchesStatus = statusFilter === "All" ||
-    ( statusFilter === "Active" && employee.status) ||
-    ( statusFilter === "Inactive" && !employee.status);
+    ( statusFilter === "Active" && employee.isActive) ||
+    ( statusFilter === "Inactive" && !employee.isActive);
     
     const matchesDepartment = 
-    departmentFilter === "All" ||
-    employee.department === departmentFilter;
+    departmentFilter === 0 ||
+  employee.departmentId === departmentFilter;
 
     return matchesSearch && matchesStatus && matchesDepartment;
 });
   
   const department = [
     "All",
-    ...new Set(employees.map((employee) => employee.department)),
+    ...new Set(employees.map((employee) => employee.departmentId)),
   ]
 
   // Sorted Data
@@ -164,15 +168,17 @@ const fetchEmployees = async () => {
   let comparison = 0;
 
   if (sortField === "name") {
-    comparison = a.name.localeCompare(b.name);
+    comparison = a.firstName.localeCompare(b.firstName);
   }
-
+  if (sortField === "name") {
+    comparison = a.lastName.localeCompare(b.lastName);
+  }
   if (sortField === "salary") {
     comparison = a.salary - b.salary;
   }
 
   if (sortField === "department") {
-    comparison = a.department.localeCompare(b.department);
+    comparison = a.departmentId - b.departmentId;
   }
 
   if (sortField === "joiningDate") {
@@ -208,11 +214,11 @@ const handleSelectedEmployee = (id: number) => {
 
 const handleSelectedAllEmployees = () => {
   const currentPageIds = paginatedEmployees.map(
-    (employee) => employee.id
+    (employee) => employee.employeeId
   );
 
-  const allSelected = currentPageIds.every((id) => 
-    selectedEmployees.includes(id)
+  const allSelected = currentPageIds.every((employeeId) => 
+    selectedEmployees.includes(employeeId)
   );
 
   if(allSelected){
@@ -237,10 +243,10 @@ const handleSelectedAllEmployees = () => {
 const handleConfirmDelete = async() => {
     if(!employeeToDelete) return;
     try{
-      await  deleteEmployee(employeeToDelete.id);
+      await  deleteEmployee(employeeToDelete.employeeId);
 
       setEmployees((prev) => 
-      prev.filter((employee) => employee.id !== employeeToDelete.id)
+      prev.filter((employee) => employee.employeeId !== employeeToDelete.employeeId)
       );
       
       setEmployeeToDelete(null);
@@ -251,10 +257,16 @@ const handleConfirmDelete = async() => {
     }
 };
 
-
   if (loading) return <p>Loading employees...</p>;
   if (error) return <p>{error}</p>;
 
+  const getDepartmentName = (departmentId: number) => {
+  return (
+    departmentOptions.find(
+      (department) => department.value === departmentId
+    )?.label || "Unknown"
+  );
+};
 
 // HTML code
     return (
@@ -295,12 +307,19 @@ const handleConfirmDelete = async() => {
 
           <select
             value={departmentFilter}
-            onChange={(event) => setDepartmentFilter(event.target.value)}
+            onChange={(event) =>
+              setDepartmentFilter(Number(event.target.value))
+            }
             className="h-12 w-[190px] rounded-lg border border-slate-700 bg-slate-900 px-4 text-slate-100 outline-none focus:border-blue-500"
           >
-            {department.map((department) => (
-              <option key={department} value={department}>
-                {department === "All" ? "All Departments" : department}
+            <option value={0}>All</option>
+
+            {departmentOptions.map((department) => (
+              <option
+                key={department.value}
+                value={department.value}
+              >
+                {department.label}
               </option>
             ))}
           </select>
@@ -360,7 +379,7 @@ const handleConfirmDelete = async() => {
           onDeleteEmployee={handleOpenDeleteModal}
           onEditEmployee={handleEditEmployee}
           onViewEmployee={handleViewEmpoloyee}
-          selectedEmployees={selectedEmployees}
+          selectedEmployee={selectedEmployees}
           onSelectedEmployee={handleSelectedEmployee}
           onSelectedAllEmployee={handleSelectedAllEmployees}
           onSort={handleSort}
@@ -434,7 +453,8 @@ const handleConfirmDelete = async() => {
         <p className="text-slate-300">
           Are you sure you want to delete{" "}
           <span className="font-semibold text-white">
-            {employeeToDelete?.name}
+            {employeeToDelete?.firstName}
+            {employeeToDelete?.lastName}
           </span>
           ?
         </p>
@@ -464,15 +484,16 @@ const handleConfirmDelete = async() => {
         {viewSelectedEmployee && (
           <div>
             <div className="grid gap-4  text-sm  text-slate-300">
-              <DetailRow label="ID" value={viewSelectedEmployee.id} />
-              <DetailRow label="Name" value={viewSelectedEmployee.name} />
+              <DetailRow label="ID" value={viewSelectedEmployee.employeeId} />
+              <DetailRow label="Name" value={viewSelectedEmployee.firstName} />
+              <DetailRow label="Name" value={viewSelectedEmployee.lastName} />
               <DetailRow label="Email" value={viewSelectedEmployee.email} />
-              <DetailRow label="Number" value={viewSelectedEmployee.number} />
+              <DetailRow label="Number" value={viewSelectedEmployee.phoneNumber} />
               <DetailRow label="Address" value={viewSelectedEmployee.address} />
               <DetailRow label="Joining Date" value={viewSelectedEmployee.joiningDate} />
-              <DetailRow label="Department" value={viewSelectedEmployee.department} />
+              <DetailRow label="Department" value={viewSelectedEmployee.departmentId} />
               <DetailRow label="Salary" value={`₹${viewSelectedEmployee.salary}`} />
-              <DetailRow label="Status" value={viewSelectedEmployee.status ? "Active" : "Inactive"} />
+              <DetailRow label="Status" value={viewSelectedEmployee.isActive ? "Active" : "Inactive"} />
             </div>
 
             <div className=" mt-6 flex justify-end gap-3 border-t border-slate-800 pt-5">
