@@ -2,7 +2,6 @@ import type { Employee, EmployeeFormData } from "../type/employee";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const BASE_URL = `${API_BASE_URL}/api/Employee`;
-
 // GET ALL
 export const getAllEmployees = async (): Promise<Employee[]> => {
   const response = await fetch(BASE_URL);

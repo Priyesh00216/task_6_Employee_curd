@@ -1,3 +1,6 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = `${API_BASE_URL}/api/Employee`;
+
 export type Employee = {
      id: number;
      name: string;
